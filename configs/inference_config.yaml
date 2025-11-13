@@ -1,0 +1,13 @@
+inference:
+  device: cpu
+  confidence_threshold: 0.45
+  nms_threshold: 0.4
+  frame_skip: 1
+  consecutive_frames_required: 1
+  blur_faces: true
+  blur_plates: true
+  draw_labels: true
+  output_video: true
+  save_output_path: outputs/
+  temporal_window: 5
+  sms_on_detect: true

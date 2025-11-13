@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+    <title>Violations</title>
+    <style>
+        body{font-family:Arial;padding:30px;background:#f8f9fa}
+        .card{background:white;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+        table{width:100%;border-collapse:collapse;margin-top:15px}
+        th,td{padding:12px;border-bottom:1px solid #ddd}
+        img{width:160px;border-radius:6px}
+        .btn{padding:6px 12px;background:#0a84ff;color:white;border-radius:8px;text-decoration:none;font-weight:600}
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>🚨 Captured Violations</h2>
+
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Time</th>
+                <th>Evidence</th>
+                <th>Download</th>
+            </tr>
+
+            {% for v in violations %}
+            <tr>
+                <td>{{ v.id }}</td>
+                <td>{{ v.timestamp }}</td>
+                <td>
+                    {% if v.evidence_path_raw %}
+                        <img src="/download?file={{ v.evidence_path_raw }}">
+                    {% else %}
+                        No image
+                    {% endif %}
+                </td>
+                <td>
+                    {% if v.evidence_path_raw %}
+                        <a class="btn" href="/download?file={{ v.evidence_path_raw }}">Download</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+    </div>
+
+</body>
+</html>

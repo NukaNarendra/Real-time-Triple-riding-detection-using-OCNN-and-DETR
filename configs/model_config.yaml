@@ -1,0 +1,25 @@
+# configs/model_config.yaml
+detector:
+  checkpoint: checkpoints/detector_best.pth
+  device: cpu      # or "cuda" if you have GPU
+  conf_thresh: 0.20
+  iou_thresh: 0.50
+
+rider_counter:
+  checkpoint: checkpoints/rider_counter_new_best.pth
+  device: cpu
+  img_size: 224
+
+plate:
+  detector: yolov8
+  weights: checkpoints/plate/plate_det/best.pt
+  conf_thresh: 0.25
+  iou_thresh: 0.45
+
+temporal_validator:
+  min_consecutive: 3
+
+output:
+  save_evidence: true
+  evidence_dir: evidence_store
+  save_video: true

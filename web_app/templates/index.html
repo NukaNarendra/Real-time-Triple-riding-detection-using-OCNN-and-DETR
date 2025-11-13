@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Triple Riding Detector</title>
+  <style>
+    /* Apple-like clean UI, increased spacing, soft shadows, glossy blue buttons, thin line icons */
+    :root{
+      --bg: #ffffff;
+      --text: #0b1220;
+      --muted: #6b7280;
+      --card-bg: #ffffff;
+      --card-border: #e6e9ef;
+      --panel-shadow: 0 10px 30px rgba(12,18,28,0.06);
+      --soft-shadow: 0 6px 20px rgba(12,18,28,0.06);
+      --accent: #0a84ff; /* glossy blue */
+      --accent-2: #007aff;
+      --radius: 16px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0; padding:40px; background:var(--bg); color:var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Times New Roman", Times, serif;
+      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+      display:flex;align-items:center;justify-content:center;min-height:100vh;
+    }
+
+    /* container */
+    .wrap{width:min(1180px,96%); display:grid; grid-template-columns:1fr 380px; gap:28px; align-items:start}
+
+    /* card styling with soft shadows and subtle border */
+    .card{background:var(--card-bg); border-radius:var(--radius); padding:28px; border:1px solid var(--card-border); box-shadow:var(--panel-shadow);}
+    aside.panel{background:var(--card-bg); border-radius:14px; padding:22px; border:1px solid var(--card-border); box-shadow:var(--soft-shadow)}
+
+    header{display:flex;gap:18px;align-items:center;margin-bottom:8px}
+    .brand{display:flex;gap:18px;align-items:center}
+
+    /* main logo: thin-line icon treatment */
+    .logoWrap{width:84px;height:84px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(180deg,#ffffff,#fbfdff);border:1px solid #eef2f7}
+    .logoWrap img{width:52px;height:52px}
+
+    h1{font-size:26px;margin:0;font-weight:700}
+    .sub{font-size:14px;color:var(--muted);margin-top:6px}
+
+    /* spacious uploader */
+    .uploader{display:flex;flex-direction:column;gap:20px}
+    .dropArea{display:flex;gap:20px;padding:22px;border-radius:12px;border:1px dashed #eef2f7;background:linear-gradient(180deg,#fff,#fbfcff);align-items:center}
+    .dropArea.drag{border-color:var(--accent);box-shadow:0 12px 40px rgba(10,132,255,0.06);transform:translateY(-4px)}
+
+    .meta h3{margin:0;font-size:17px}
+    .meta p{margin:6px 0 0;color:var(--muted);font-size:14px}
+
+    .controls{display:flex;gap:12px;align-items:center;margin-top:12px}
+
+    /* glossy blue button */
+    .btn{padding:12px 16px;border-radius:12px;border:0;background:linear-gradient(180deg,var(--accent),var(--accent-2));color:white;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(10,132,255,0.16);transition:transform .12s ease,box-shadow .12s}
+    .btn:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(10,132,255,0.18)}
+    .btn.ghost{background:transparent;border:1px solid #e6e9ef;color:var(--text);font-weight:600}
+
+    input[type=file]{display:none}
+    .filename{color:var(--muted);font-size:13px}
+
+    /* increased spacing and premium layout */
+    .meta-opts{display:flex;gap:12px;align-items:center;margin-top:12px}
+    .toggle{appearance:none;width:48px;height:26px;border-radius:999px;background:#f3f4f6;border:1px solid #e6e9ef;position:relative;cursor:pointer}
+    .toggle:after{content:'';position:absolute;left:5px;top:5px;width:16px;height:16px;border-radius:50%;background:white;transition:transform .18s}
+    .toggle.checked{background:linear-gradient(90deg,var(--accent),var(--accent-2));border-color:rgba(10,132,255,0.12)}
+    .toggle.checked:after{transform:translateX(22px)}
+
+    /* inputs */
+    .input{width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;background:#ffffff;color:var(--text);font-size:14px}
+
+    /* thin black line icons used within controls */
+    .icon{width:20px;height:20px;display:inline-block;vertical-align:middle}
+    .icon svg{stroke:#0b1220;stroke-width:1.2;fill:none}
+
+    .logos{display:flex;gap:12px;align-items:center;margin-top:16px}
+    .logos img{height:28px;opacity:0.95;border-radius:6px;background:#fff;border:1px solid #f1f3f6;padding:4px}
+
+    video#preview{width:100%;border-radius:12px;display:none}
+    .placeholder{color:var(--muted);font-size:14px;padding:16px}
+
+    footer{grid-column:1 / -1;margin-top:18px;color:var(--muted);text-align:center;font-size:13px}
+
+    /* responsive tweaks */
+    @media (max-width:1024px){.wrap{grid-template-columns:1fr 320px}};
+    @media (max-width:900px){.wrap{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;filter:blur(12px);opacity:0.9"></canvas>
+
+  <main class="wrap" role="main">
+    <section class="card">
+      <header>
+        <div class="brand">
+          <div class="logoWrap" aria-hidden="true">
+            <!-- thin-line motorcycle riders icon (SVG) -->
+            <img src="https://cdn-icons-png.flaticon.com/512/10483/10483149.png" alt="Triple Riding Logo">
+          </div>
+
+          <div>
+            <h1>Triple Riding Detector</h1>
+            <div class="sub">Apple-like clean UI · high readability · premium spacing</div>
+          </div>
+        </div>
+      </header>
+
+      <form id="uploadForm" method="post" enctype="multipart/form-data" class="uploader" novalidate>
+        <div id="dropArea" class="dropArea" aria-label="Drop video here">
+          <div style="width:96px;display:grid;place-items:center">
+            <!-- white square with thin black video icon inside -->
+            <div style="width:72px;height:72px;border-radius:12px;background:#ffffff;border:1px solid #eef2f7;display:grid;place-items:center;">
+              <svg width="34" height="34" viewBox="0 0 24 24" class="icon" aria-hidden="true"><path d="M3 7h3l2-2h6l2 2h3v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="#0b1220" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="meta" style="flex:1">
+            <h3>Drop a video file or click to choose</h3>
+            <p>Supported: mp4 / mov / avi / webm. Or paste RTSP / HTTP URL in the right panel.</p>
+
+            <div class="controls">
+              <label class="btn" for="fileInput">Choose file</label>
+              <button type="button" id="clearBtn" class="btn ghost">Clear</button>
+              <div style="flex:1;text-align:right"><div class="filename" id="filename">No file selected</div></div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
+              <div class="meta-opts">
+                <span style="font-size:14px;color:var(--muted)">Start stream after upload</span>
+                <button type="button" id="startToggle" class="toggle checked" aria-pressed="true" title="Toggle start after upload"></button>
+              </div>
+
+              <div><button type="submit" class="btn">Start Stream</button></div>
+            </div>
+
+          </div>
+        </div>
+
+        <input id="fileInput" type="file" name="video_file" accept="video/*">
+
+      </form>
+
+      <footer style="margin-top:18px">Privacy first — ensure consent from recorded subjects. Optimized for performance and low-latency viewing.</footer>
+    </section>
+
+    <aside class="panel">
+      <h4 style="margin:0 0 10px 0">Stream / URL</h4>
+      <input id="videoUrl" name="video_url" class="input" type="url" placeholder="rtsp://camera.local:554/stream or https://example.com/video.mp4">
+
+      <div style="margin-top:18px">
+        <h4 style="margin-bottom:10px">Preview</h4>
+        <div style="background:#ffffff;border:1px solid #eef2f7;border-radius:12px;padding:12px">
+          <video id="preview" controls muted playsinline></video>
+          <div id="previewPlaceholder" class="placeholder">No preview available.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px">
+        <h4 style="margin-bottom:10px">Trusted components</h4>
+        <div class="logos" aria-hidden="true">
+          <img src="https://cdn.simpleicons.org/github/0b1220" alt="GitHub logo" title="GitHub">
+          <img src="https://cdn.simpleicons.org/opencv/0b1220" alt="OpenCV logo" title="OpenCV">
+          <img src="https://cdn.simpleicons.org/tensorflow/0b1220" alt="TensorFlow logo" title="TensorFlow">
+          <img src="https://cdn.simpleicons.org/nvidia/0b1220" alt="NVIDIA logo" title="NVIDIA">
+        </div>
+        <div style="margin-top:12px;color:var(--muted);font-size:14px">Tip: Enable hardware decoding (NVDEC/VAAPI) on the server for smoother RTSP playback.</div>
+      </div>
+    </aside>
+
+    <footer style="margin-top:14px;grid-column:1/-1;text-align:center;color:var(--muted)">Theme: Apple-like Light · Spacing increased · Glossy buttons</footer>
+  </main>
+
+  <script>
+    // subtle canvas background animation: soft floating blobs and connecting lines (light, performant)
+    const bgCanvas = document.getElementById('bgCanvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    let cw = bgCanvas.width = window.innerWidth;
+    let ch = bgCanvas.height = window.innerHeight;
+
+    const BLUR = 36; // applied via CSS filter as well
+    const SHAPES = Math.max(8, Math.round((cw * ch) / 280000));
+    const shapes = [];
+
+    function rand(min, max){ return Math.random() * (max - min) + min }
+
+    function initShapes(){
+      shapes.length = 0;
+      for(let i=0;i<SHAPES;i++){
+        shapes.push({
+          x: rand(-cw*0.2, cw*1.2),
+          y: rand(-ch*0.2, ch*1.2),
+          vx: rand(-0.15, 0.15),
+          vy: rand(-0.08, 0.08),
+          r: rand(Math.min(cw,ch)*0.06, Math.min(cw,ch)*0.18),
+          hue: rand(200,220),
+          alpha: rand(0.06, 0.14)
+        });
+      }
+    }
+
+    window.addEventListener('resize', ()=>{ cw = bgCanvas.width = window.innerWidth; ch = bgCanvas.height = window.innerHeight; initShapes(); });
+
+    let mouse = {x: cw/2, y: ch/2};
+    window.addEventListener('mousemove', (e)=>{ mouse.x = e.clientX; mouse.y = e.clientY });
+
+    function drawBg(){
+      bgCtx.clearRect(0,0,cw,ch);
+      // gentle dark overlay to keep UI readable
+      bgCtx.fillStyle = 'rgba(250,250,252,0.6)';
+      bgCtx.fillRect(0,0,cw,ch);
+
+      // draw soft colored blobs
+      for(const s of shapes){
+        s.x += s.vx + (mouse.x - s.x) * 0.0005;
+        s.y += s.vy + (mouse.y - s.y) * 0.0003;
+        if(s.x < -s.r) s.x = cw + s.r; if(s.x > cw + s.r) s.x = -s.r;
+        if(s.y < -s.r) s.y = ch + s.r; if(s.y > ch + s.r) s.y = -s.r;
+
+        const g = bgCtx.createRadialGradient(s.x, s.y, s.r*0.05, s.x, s.y, s.r);
+        const color = `hsl(${s.hue}deg 80% 60% / ${s.alpha})`;
+        g.addColorStop(0, color);
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        bgCtx.fillStyle = g;
+        bgCtx.beginPath(); bgCtx.arc(s.x,s.y,s.r,0,Math.PI*2); bgCtx.fill();
+      }
+
+      // soft connecting lines between nearby centers (very subtle)
+      bgCtx.lineWidth = 0.6;
+      for(let i=0;i<shapes.length;i++){
+        for(let j=i+1;j<shapes.length;j++){
+          const a = shapes[i], b = shapes[j];
+          const dx = a.x - b.x, dy = a.y - b.y; const d = Math.hypot(dx, dy);
+          if(d < Math.min(cw,ch) * 0.22){
+            const op = 0.045 * (1 - d / (Math.min(cw,ch) * 0.22));
+            bgCtx.strokeStyle = `rgba(10,132,255,${op})`;
+            bgCtx.beginPath(); bgCtx.moveTo(a.x, a.y); bgCtx.lineTo(b.x, b.y); bgCtx.stroke();
+          }
+        }
+      }
+
+      requestAnimationFrame(drawBg);
+    }
+
+    initShapes();
+    // small initial delay to ensure layout settled
+    setTimeout(()=>{ requestAnimationFrame(drawBg); }, 60);
+
+    // make canvas lower z-index than UI but above background so UI remains interactive
+    bgCanvas.style.zIndex = 0;
+    document.querySelector('main').style.position = 'relative';
+    document.querySelector('main').style.zIndex = 1;
+
+    // ---------- Interactive UI: file handling, preview, drag/drop, toggle ----------
+    const fileInput = document.getElementById('fileInput');
+    const filenameEl = document.getElementById('filename');
+    const preview = document.getElementById('preview');
+    const previewPlaceholder = document.getElementById('previewPlaceholder');
+    const dropArea = document.getElementById('dropArea');
+    const startToggle = document.getElementById('startToggle');
+
+    function setFile(file){
+      if(!file) return;
+      filenameEl.textContent = file.name + ' (' + Math.round(file.size/1024/1024) + ' MB)';
+      const url = URL.createObjectURL(file);
+      preview.src = url; preview.style.display = 'block'; previewPlaceholder.style.display = 'none';
+    }
+
+    fileInput.addEventListener('change', e=>{ const f=e.target.files[0]; if(f) setFile(f); });
+    document.querySelector('label[for="fileInput"]').addEventListener('click', ()=> fileInput.click());
+
+    document.getElementById('clearBtn').addEventListener('click', ()=>{
+      fileInput.value=''; filenameEl.textContent='No file selected'; preview.pause(); preview.src=''; preview.style.display='none'; previewPlaceholder.style.display='block';
+    });
+
+    dropArea.addEventListener('dragover', e=>{ e.preventDefault(); dropArea.classList.add('drag') });
+    dropArea.addEventListener('dragleave', e=>{ dropArea.classList.remove('drag') });
+    dropArea.addEventListener('drop', e=>{ e.preventDefault(); dropArea.classList.remove('drag'); const f = e.dataTransfer.files && e.dataTransfer.files[0]; if(f){ fileInput.files = e.dataTransfer.files; setFile(f);} });
+
+    startToggle.addEventListener('click', ()=>{ startToggle.classList.toggle('checked'); const on = startToggle.classList.contains('checked'); startToggle.setAttribute('aria-pressed', on); });
+
+    document.getElementById('uploadForm').addEventListener('submit', e=>{
+      const url = document.getElementById('videoUrl').value.trim(); const hasFile = fileInput.files && fileInput.files.length>0;
+      if(!hasFile && !url){ e.preventDefault(); alert('Please select a video file or enter a stream URL.'); }
+    });
+
+    // performance note: revoke object URLs when page unloads
+    window.addEventListener('beforeunload', ()=>{ if(preview && preview.src) URL.revokeObjectURL(preview.src); });
+  </script>
+</body>
+</html>

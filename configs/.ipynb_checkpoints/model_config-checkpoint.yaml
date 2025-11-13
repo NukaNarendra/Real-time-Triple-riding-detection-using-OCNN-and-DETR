@@ -1,0 +1,14 @@
+model:
+  detector_type: detr             # detr | dino | fasterrcnn
+  backbone: resnet50              # resnet50 | swin_t | vit_b
+  pretrained: true
+  num_classes: 2                  # motorcycle, rider
+  hidden_dim: 256
+  dropout: 0.1
+  transformer_layers: 6
+  transformer_heads: 8
+  position_embedding: sine
+  use_rider_counter: true
+  rider_counter_checkpoint: checkpoints/rider_counter.pth
+  plate_detector_checkpoint: checkpoints/plate_detector.pth
+  ocr_model: easyocr

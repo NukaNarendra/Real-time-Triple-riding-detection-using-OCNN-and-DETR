@@ -1,0 +1,20 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtualenv
+venv/
+env/
+.env
+
+# PyCharm
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+.venv/
+__pycache__/
+*.pyc
+.idea/

@@ -1,0 +1,14 @@
+flask
+flask-wtf
+sqlalchemy
+pillow
+opencv-python-headless
+python-dotenv
+pyyaml
+numpy
+torch
+torchvision
+albumentations
+easyocr
+pytesseract
+twilio
