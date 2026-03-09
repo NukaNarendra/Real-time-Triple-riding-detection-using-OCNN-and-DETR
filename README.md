@@ -226,6 +226,6 @@ MIT License
 
 ## 👨‍💻 Author
 
-### **Nuka Venkata Narendra**
+### **Nuka Venkata Narendra and Bejawada Venkata Sai and Battina Jahnavi**
 
 AI/ML Engineer • Real‑Time Systems Developer • NLP Engineer 
